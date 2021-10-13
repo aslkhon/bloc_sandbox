@@ -1,8 +1,13 @@
 part of 'validator_cubit.dart';
 
-class ValidatorState {
-  static TextEditingController controller = TextEditingController();
-  bool isNotValid;
+class ValidatorState extends Equatable {
+  final bool isNotValid;
 
-  ValidatorState({required this.isNotValid});
+  const ValidatorState({required this.isNotValid});
+
+  @override
+  List<Object?> get props => [isNotValid];
+
+  @override
+  bool? get stringify => true;
 }

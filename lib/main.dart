@@ -15,12 +15,15 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: BlocProvider(
+        create: (context) => ValidatorCubit(),
+        child: const MyHomePage(title: 'Flutter Demo Home Page'),
+      ),
     );
   }
 }
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
   final String title;
 
   const MyHomePage({
@@ -29,33 +32,51 @@ class MyHomePage extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  late final TextEditingController controller;
+
+  @override
+  void initState() {
+    controller = TextEditingController();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
+        title: Text(widget.title),
       ),
       body: Center(
-        child: BlocProvider<ValidatorCubit>(
-          create: (context) => ValidatorCubit(),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                'Enter your text here:',
-              ),
-              BlocBuilder<ValidatorCubit, ValidatorState>(
-                builder: (context, state) {
-                  return TextField(
-                    controller: ValidatorState.controller,
-                    decoration: InputDecoration(
-                        errorText:
-                            state.isNotValid ? 'TextField is empty!' : null),
-                  );
-                },
-              ),
-              const ValidationButton()
-            ],
-          ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              'Enter your text here:',
+            ),
+            BlocBuilder<ValidatorCubit, ValidatorState>(
+              builder: (context, state) {
+                return TextField(
+                  controller: controller,
+                  decoration: InputDecoration(
+                      errorText:
+                          state.isNotValid ? 'TextField is empty!' : null),
+                );
+              },
+            ),
+            ValidationButton(
+                onPressed: () => BlocProvider.of<ValidatorCubit>(context)
+                    .validate(controller.text))
+          ],
         ),
       ),
     );
@@ -63,12 +84,14 @@ class MyHomePage extends StatelessWidget {
 }
 
 class ValidationButton extends StatelessWidget {
-  const ValidationButton({Key? key}) : super(key: key);
+  final VoidCallback onPressed;
+
+  const ValidationButton({Key? key, required this.onPressed}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return TextButton.icon(
-        onPressed: () => BlocProvider.of<ValidatorCubit>(context).validate(),
+        onPressed: onPressed,
         icon: const Icon(Icons.check),
         label: const Text('Validate'));
   }
